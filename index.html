@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ATM 사용법 연습</title>
+<style>
+:root{--u:7px;--cw:max(calc(var(--u)*13),60px);--ch:calc(var(--cw)*.63);--fs:max(13px,calc(var(--u)*2.4));--blue:#1a55c8;--navy:#0b2f6b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:linear-gradient(#dfe9f7,#c3d3ec);height:100dvh;overflow:auto;display:flex;flex-direction:column;color:#12233f;-webkit-user-select:none;user-select:none}
+button{font-family:inherit}
+
+/* ---------- top bar / guide ---------- */
+#top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:#0b2f6b;color:#fff}
+#top .brand{font-weight:900;font-size:18px;margin-right:auto}
+.tbtn{border:0;border-radius:99px;padding:7px 12px;font-weight:700;font-size:14px;background:#fff;color:#0b2f6b;cursor:pointer;min-height:36px}
+.tbtn.on{background:#ffd43b}
+.tbtn.mis{background:#ff8a3d;color:#fff}
+#guide{display:flex;align-items:center;gap:10px;margin:8px 10px 0;padding:8px 12px;background:#fff;border:3px solid #ffd43b;border-radius:16px;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+#guide .mascot{font-size:34px;line-height:1}
+#guide-text{flex:1;font-weight:800;font-size:clamp(16px,2.4vw,24px);line-height:1.35}
+#guide.pop #guide-text{animation:pop .4s}
+#guide-say{border:0;background:#e6efff;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
+@keyframes pop{0%{transform:scale(.96);opacity:.5}100%{transform:none;opacity:1}}
+#stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start;padding:6px 8px 6px}
+
+/* ---------- ATM body ---------- */
+#atm{width:calc(var(--u)*100);background:linear-gradient(#e6ebf3,#b5bfd0 55%,#a3aec2);border-radius:calc(var(--u)*3) calc(var(--u)*3) calc(var(--u)*1.5) calc(var(--u)*1.5);padding-bottom:calc(var(--u)*2);box-shadow:0 calc(var(--u)*1) calc(var(--u)*2.5) rgba(0,0,0,.35),inset 0 2px 0 #fff,inset 0 -4px 8px rgba(0,0,0,.15);border:2px solid #8995ab;position:relative}
+.atm-top{display:flex;align-items:center;gap:calc(var(--u)*1.2);margin:calc(var(--u)*1.6) calc(var(--u)*2) calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.6);background:linear-gradient(#0f4cb8,#0a3585);border-radius:calc(var(--u)*1.2);color:#fff;font-size:max(13px,calc(var(--u)*2.4));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 4px rgba(0,0,0,.3)}
+.atm-top .logo{display:inline-grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;background:#ffd43b;color:#0b2f6b;font-weight:900}
+.atm-top .sub{margin-left:auto;font-size:.65em;letter-spacing:.12em;opacity:.85}
+.atm-top .leds{display:flex;gap:4px}.atm-top .leds i{width:8px;height:8px;border-radius:50%;background:#3f8;box-shadow:0 0 6px #3f8}
+.atm-top .leds i:nth-child(2){background:#ffd43b;box-shadow:0 0 6px #ffd43b}
+.panel{display:grid;grid-template-columns:1fr 1.5fr 1fr;grid-template-areas:"pass deco card" "pass cash rcpt";gap:calc(var(--u)*1.2);padding:calc(var(--u)*1.4);margin:0 calc(var(--u)*2);background:linear-gradient(#97a4ba,#bcc6d6);border-radius:calc(var(--u)*1.4);box-shadow:inset 0 3px 8px rgba(0,0,0,.35),0 1px 0 #fff}
+.c-pass{grid-area:pass}.c-deco{grid-area:deco}.c-card{grid-area:card}.c-cash{grid-area:cash}.c-rcpt{grid-area:rcpt}
+.c-deco{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#33425f;font-size:max(10px,calc(var(--u)*1.6));font-weight:700}
+.grille{width:70%;height:calc(var(--u)*4);background:repeating-linear-gradient(90deg,#4a566d 0 3px,#2b3345 3px 6px);border-radius:8px;opacity:.8}
+.slotbox{position:relative;display:flex;flex-direction:column;height:100%;background:rgba(255,255,255,.4);border:2px solid rgba(40,60,100,.4);border-radius:12px;padding:5px;transition:box-shadow .2s,background .2s}
+.lbl{font-weight:900;font-size:max(11px,calc(var(--u)*1.9));text-align:center;color:#17294d;padding:2px 0;white-space:nowrap}
+.slit{height:max(10px,calc(var(--u)*1.7));background:#0e1320;border-radius:99px;position:relative;box-shadow:inset 0 2px 4px #000,0 1px 0 rgba(255,255,255,.7);margin:3px 4%;flex:none;overflow:hidden}
+.slit.cashslit{height:max(14px,calc(var(--u)*2.6))}
+.slit .led{position:absolute;left:8px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#2d3a52}
+.slotbox.active .led{background:#3f8;box-shadow:0 0 8px #3f8;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.shutter{position:absolute;inset:0;background:linear-gradient(#a2adc0,#707c92);transition:transform .6s;z-index:2}
+.slotbox.open .shutter{transform:translateX(-102%)}
+.zone{position:relative;overflow:hidden;flex:none;width:100%}
+.up .zone{height:calc(var(--ch)*1.1)}
+.c-pass .zone{flex:1;min-height:calc(var(--cw)*.9)}
+.c-cash .zone{height:calc(var(--cw)*.74)}
+.c-rcpt .zone{height:calc(var(--cw)*.86)}
+body.help .slotbox.active{box-shadow:0 0 0 3px #ffd43b,0 0 18px 5px rgba(255,212,59,.85);animation:glow 1s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 3px #ffd43b,0 0 6px 1px rgba(255,212,59,.4)}}
+.slotbox.hover{background:rgba(255,255,255,.85);outline:3px dashed var(--blue)}
+.slotbox.shake{animation:shake .5s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* ---------- items ---------- */
+.k-card{--iw:var(--cw);--ih:var(--ch)}
+.k-passbook{--iw:calc(var(--cw)*1.25);--ih:calc(var(--cw)*.85)}
+.k-cash{--iw:calc(var(--cw)*1.6);--ih:calc(var(--cw)*.8)}
+.k-receipt{--iw:calc(var(--cw)*.95);--ih:calc(var(--cw)*1.15)}
+.item{position:relative;width:var(--iw);height:var(--ih);touch-action:none;cursor:grab;flex:none}
+.item.dragging{cursor:grabbing;filter:drop-shadow(0 10px 8px rgba(0,0,0,.4))}
+.item.popin{animation:popin .5s}
+@keyframes popin{0%{transform:scale(.4)}60%{transform:scale(1.15)}100%{transform:none}}
+.item.card{border-radius:calc(var(--cw)*.07);background:linear-gradient(135deg,#4b94ff,#1b4fc4 55%,#16a6d9);box-shadow:0 2px 5px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.4);color:#fff;overflow:hidden}
+.item.card .chip{position:absolute;left:11%;top:22%;width:20%;height:26%;border-radius:15%;background:linear-gradient(135deg,#ffe27a,#c9962a)}
+.item.card .ct{position:absolute;right:8%;top:12%;font-size:calc(var(--cw)*.12);font-weight:900;text-align:right;line-height:1.05}
+.item.card .stripe{position:absolute;left:0;right:0;bottom:16%;height:12%;background:rgba(255,255,255,.25)}
+.item.card .cn{position:absolute;left:10%;bottom:3%;font-size:calc(var(--cw)*.085);letter-spacing:.08em;opacity:.9}
+.item.passbook{border-radius:6px 10px 10px 6px;background:linear-gradient(135deg,#27b27c,#0e7a52);box-shadow:0 2px 6px rgba(0,0,0,.45),inset 5px 0 0 rgba(0,0,0,.25);color:#fff;display:grid;place-items:center;text-align:center}
+.item.passbook .lab{background:#fff;color:#0e5a3d;border-radius:5px;padding:calc(var(--cw)*.05) calc(var(--cw)*.12);font-weight:900;font-size:calc(var(--cw)*.17);line-height:1.15}
+.item.passbook small{display:block;font-size:.55em;font-weight:700}
+.item.passbook .band{position:absolute;left:0;right:0;top:12%;height:8%;background:#ffd43b;opacity:.9}
+.item.cash .bill{position:absolute;width:calc(var(--cw)*1.4);height:calc(var(--cw)*.62);border-radius:4px;background:linear-gradient(120deg,#c9f2a6,#8fd16b 50%,#c7ef9f);border:1.5px solid #4c8b36;box-shadow:0 1px 3px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:space-between;padding:0 7%;color:#2d6a1e;font-weight:900;font-size:calc(var(--cw)*.16)}
+.item.cash .bill::before{content:"";width:22%;height:70%;border-radius:50%;background:rgba(255,255,255,.45);border:1.5px solid #4c8b36}
+.item.cash .bill small{font-size:.55em}
+.item.receipt{background:#fff;color:#222;font-family:'Courier New','Malgun Gothic',monospace;font-size:max(7.5px,calc(var(--cw)*.095));padding:6% 8% 14%;line-height:1.35;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35);-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/9px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/9px 100%}
+.item.receipt b{font-size:1.15em}.item.receipt hr{border:0;border-top:1px dashed #999;margin:3px 0}
+
+/* items sliding in the slots */
+.pos{position:absolute;left:50%;width:var(--iw);height:var(--ih);margin-left:calc(var(--iw)/-2)}
+.up .pos{bottom:calc(var(--ih)*-1.08);transition:bottom 1s cubic-bezier(.2,.8,.2,1)}
+.up .pos.show{bottom:calc(var(--ih)*-.22)}
+.down .pos{top:calc(var(--ih)*-1.08);transition:top 1s cubic-bezier(.2,.8,.2,1)}
+.down .pos.show{top:calc(var(--ih)*-.18)}
+.down .pos.k-receipt{transition:top 2.2s steps(14,end)}
+.down .pos.k-receipt.show{top:0}
+.pos.instant{transition:none!important}
+.pos[data-out="1"].show .item{animation:nudge 1.1s infinite}
+@keyframes nudge{50%{transform:translateY(4px)}}
+.item.dragging{animation:none!important}
+
+/* ---------- screen ---------- */
+.bezel{margin:calc(var(--u)*1.6) calc(var(--u)*2) 0;padding:calc(var(--u)*1.2);background:#0b0e15;border-radius:calc(var(--u)*1.6);box-shadow:inset 0 0 0 2px #2b3342,0 3px 10px rgba(0,0,0,.4)}
+#screen{height:var(--sh,calc(var(--u)*62));background:linear-gradient(#f4f8ff,#d9e7fb);border-radius:calc(var(--u)*.8);overflow:hidden;display:flex;flex-direction:column;position:relative;font-size:var(--fs);box-shadow:inset 0 0 30px rgba(0,40,120,.15)}
+#screen.compact .sc-head{padding:.25em .6em}#screen.compact .sc-body{gap:.22em;padding:.3em}#screen.compact .q{font-size:1.05em;line-height:1.25}#screen.compact .pad{gap:.25em}#screen.compact .pad .sbtn{min-height:1.5em;font-size:1em;padding:.1em;border-radius:.5em;box-shadow:0 .12em 0 #0e3a8f}#screen.compact .sbtn{min-height:1.8em;padding:.2em .6em}#screen.compact .sc-foot{padding:.3em}#screen.compact .amt{font-size:1.5em}#screen.compact .bigmoney,#screen.compact .count{font-size:1.7em}#screen.compact .mbtn{padding:.2em;font-size:1em}#screen.compact .mbtn small{display:none}#screen.compact .mgrid{gap:.35em}#screen.compact .mbtn .ic{font-size:1.4em}#screen.compact .idle-art{font-size:1.8em}#screen.compact .idle .big{font-size:1.4em}#screen.compact .dot{width:1em;height:1em}#screen.compact .trow{padding:.2em .6em}#screen.compact .spin{width:2em;height:2em}#screen.compact .hintpw{font-size:.8em;min-height:1em}
+.sc-head{display:flex;align-items:center;gap:.6em;padding:.45em .8em;background:linear-gradient(#0f4cb8,#0a3585);color:#fff}
+.sc-logo{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#ffd43b;color:#0b2f6b;font-weight:900;font-size:.9em}
+.sc-title{margin-left:auto;font-weight:700}.sc-time{font-size:.7em;opacity:.8}
+.sc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.55em;padding:.6em;text-align:center;overflow:auto;min-height:0}
+.sc-foot{display:flex;gap:.6em;padding:.55em;background:rgba(255,255,255,.7);border-top:1px solid #b6c8e6}
+.q{font-size:1.25em;font-weight:900;color:#0b2f6b;line-height:1.35}
+.sub{font-size:.9em;color:#3a4f78;font-weight:600}
+.sbtn{font:inherit;font-weight:800;min-height:2.3em;padding:.45em .9em;border:0;border-radius:.7em;background:linear-gradient(#4a92ff,#1a55c8);color:#fff;box-shadow:0 .2em 0 #0e3a8f;cursor:pointer;flex:1;position:relative}
+.sbtn:active{transform:translateY(.15em);box-shadow:0 .05em 0 #0e3a8f}
+.sbtn.sec{background:#fff;color:var(--blue);border:2px solid var(--blue);box-shadow:0 .2em 0 #9fb8e6}
+.sbtn.warn{background:linear-gradient(#ffae5c,#e8701a);box-shadow:0 .2em 0 #a84d0b}
+.sbtn.ok{background:linear-gradient(#4fd48b,#1e9e5a);box-shadow:0 .2em 0 #0f6b3a}
+body.help .rec{animation:rec 1s infinite}
+@keyframes rec{0%,100%{box-shadow:0 .2em 0 #0e3a8f,0 0 0 0 rgba(255,212,59,0)}50%{box-shadow:0 .2em 0 #0e3a8f,0 0 0 .35em rgba(255,212,59,.95)}}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6em;width:100%;max-width:30em}
+.mbtn{font:inherit;display:flex;flex-direction:column;align-items:center;gap:.1em;padding:.7em .4em;border:0;border-radius:.9em;background:linear-gradient(#fff,#e6efff);color:#0b2f6b;font-weight:900;font-size:1.05em;box-shadow:0 .2em 0 #8ea9de,0 0 0 2px #1a55c8 inset;cursor:pointer}
+.mbtn .ic{font-size:1.9em;line-height:1.1}.mbtn small{font-size:.65em;color:#3a4f78;font-weight:700}
+.mbtn:active{transform:translateY(.15em)}
+.dots{display:flex;gap:.6em;margin:.1em 0}.dot{width:1.3em;height:1.3em;border-radius:50%;border:3px solid #1a55c8;background:#fff}.dot.on{background:#1a55c8}
+.dots.shake{animation:shake .5s}
+.hintpw{font-size:.85em;color:#3a4f78;font-weight:700;min-height:1.3em}.hintpw.err{color:#d6371f}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.4em;width:min(100%,21em)}
+.pad .sbtn{min-height:1.9em;font-size:1.15em;padding:.2em}
+.amt{font-size:2em;font-weight:900;color:#0b2f6b;background:#fff;border:3px solid #1a55c8;border-radius:.5em;padding:.1em .7em;min-width:8em;text-align:right}
+.arow{display:flex;gap:.5em;width:100%;max-width:30em}.arow .sbtn{min-height:2.1em}
+.idle .big{font-size:1.7em;font-weight:900;color:#0b2f6b;line-height:1.35}
+.idle-art{display:flex;gap:1.2em;font-size:2.6em}.idle-art span{animation:bob 1.2s infinite}.idle-art span:nth-child(2){animation-delay:.3s}
+@keyframes bob{50%{transform:translateY(-.25em)}}
+.spin{width:3em;height:3em;border:.4em solid #c9d9f5;border-top-color:#1a55c8;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.trow{display:flex;align-items:center;gap:.6em;width:100%;max-width:26em;padding:.45em .8em;border-radius:.8em;background:#fff;border:3px solid #ffb347;font-weight:800;text-align:left}
+.trow span{font-size:1.5em}.trow em{margin-left:auto;font-style:normal;font-size:.8em;color:#d6701a}
+.trow.done{border-color:#3bbf7a;background:#eafbf1;opacity:.85}.trow.done em{color:#1e9e5a}
+.arrow-down{font-size:2em;animation:bob 1s infinite}
+.pbp{width:min(100%,24em);background:#fff;border:2px solid #0e7a52;border-radius:.6em;padding:.4em .6em;font-size:.85em;text-align:left;font-family:'Courier New','Malgun Gothic',monospace}
+.pbp .ln{display:flex;justify-content:space-between;gap:.5em;animation:lnin .6s both}
+@keyframes lnin{from{opacity:0;transform:translateX(-1em)}to{opacity:1;transform:none}}
+.pbbar{width:min(100%,24em);height:.9em;border-radius:99px;background:#cfe0fa;overflow:hidden}.pbbar i{display:block;height:100%;width:0;background:#1a55c8;animation:fill var(--d,2.5s) linear forwards}
+@keyframes fill{to{width:100%}}
+.bigmoney{font-size:2.3em;font-weight:900;color:#0b2f6b}
+.count{font-size:2.4em;font-weight:900;color:#1e9e5a}
+
+/* ---------- tray ---------- */
+#tray{position:sticky;bottom:0;z-index:50;display:flex;gap:10px;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(#f7f9fd,#d7e1f1);border-top:3px solid #7d8cab;box-shadow:0 -4px 12px rgba(0,0,0,.2)}
+.tslot{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:calc(var(--cw)*2.3);min-width:0}
+.holder{position:relative;display:grid;place-items:center;width:100%;height:calc(var(--cw)*1.05);border-radius:16px;background:#fff;border:3px solid #8ea4d0}
+.holder.empty{border-style:dashed;background:#eef2fa}
+.holder.empty .item{visibility:hidden}
+.holder.empty::after{content:attr(data-msg);position:absolute;font-size:12px;font-weight:700;color:#7a89a8;text-align:center;padding:0 4px}
+.tlabel{font-weight:900;font-size:15px}.tlabel small{font-weight:700;color:#456}
+body.help .tslot.rec .holder{border-color:#ffb300;animation:holdglow 1s infinite}
+@keyframes holdglow{50%{box-shadow:0 0 0 6px rgba(255,200,0,.7)}}
+#tray.need{outline:4px solid #ff8a3d;outline-offset:-4px}
+#tray.hover{background:linear-gradient(#e6ffe9,#bfeccb)}
+#toast{position:fixed;left:50%;top:18%;transform:translate(-50%,-30px);background:#ff8a3d;color:#fff;font-weight:900;font-size:clamp(17px,3vw,26px);padding:14px 22px;border-radius:18px;box-shadow:0 6px 20px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.3s;z-index:3000;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.good{background:#1e9e5a}
+/* modal */
+#modal{position:fixed;inset:0;z-index:2000;background:rgba(10,30,70,.6);display:grid;place-items:center;padding:12px;overflow:auto}
+#modal[hidden]{display:none}
+.card-modal{background:#fff;border-radius:22px;padding:20px;width:min(94vw,560px);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.card-modal h2{margin:0 0 4px;font-size:24px;color:#0b2f6b;text-align:center}
+.card-modal p{margin:0 0 12px;text-align:center;color:#456;font-weight:600}
+.mis-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mis{font:inherit;border:0;border-radius:16px;padding:12px 8px;background:#eaf2ff;box-shadow:0 4px 0 #9fb8e6;cursor:pointer;font-weight:900;color:#0b2f6b;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mis .ic{font-size:34px}.mis small{font-size:13px;color:#456;font-weight:700}
+.mis:active{transform:translateY(3px)}
+.mis.free{grid-column:1/-1;background:#fff3d6;box-shadow:0 4px 0 #e0b95a}
+.mrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.mrow .tbtn{flex:1;background:#1a55c8;color:#fff;font-size:16px;min-height:46px}
+table.pbt{width:100%;border-collapse:collapse;font-size:14px}table.pbt th,table.pbt td{border-bottom:1px solid #cde;padding:5px;text-align:right}table.pbt th:first-child,table.pbt td:first-child{text-align:left}
+.confetti{position:fixed;top:-30px;font-size:28px;z-index:2500;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (min-width:1000px) and (min-aspect-ratio:5/4){
+ body{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr}
+ #top,#guide{grid-column:1/-1}
+ #stage{grid-column:1;grid-row:3}
+ #tray{grid-column:2;grid-row:3;position:sticky;top:10px;align-self:start;flex-direction:column;width:calc(var(--cw)*2.1 + 28px);margin:10px 16px 0 0;border:3px solid #7d8cab;border-radius:18px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+ .tslot{max-width:none;width:100%;flex:none}
+ .holder{height:calc(var(--cw)*1.05)}
+}
+@media (max-width:600px){#top{padding:5px 8px;gap:5px}#top .brand{display:none}.tbtn{padding:4px 8px;font-size:12px;min-height:30px}#guide{margin:5px 6px 0;padding:5px 8px}#guide .mascot{font-size:24px}#guide-text{font-size:14px}#guide-say{width:32px;height:32px;font-size:16px}#tray{padding:5px 6px calc(5px + env(safe-area-inset-bottom));gap:6px}.tlabel{font-size:13px}}
+@media (max-height:760px){#top{padding:5px 10px}#guide{padding:4px 10px;margin-top:5px}#guide .mascot{font-size:26px}#guide-text{font-size:clamp(14px,2vw,20px)}}
+/* ---- wallet ---- */
+#tray{position:sticky;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 3px,transparent 3px 6px),linear-gradient(#a8693a,#7a4320 60%,#6a3818);border:0;border-top:4px solid #4e2a12;box-shadow:0 -4px 12px rgba(0,0,0,.3),inset 0 3px 0 rgba(255,255,255,.18)}
+#tray::before{content:"";position:absolute;inset:5px;border:2px dashed rgba(255,226,170,.55);border-radius:14px;pointer-events:none}
+.wtitle{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:#4e2a12;color:#ffe2aa;font-weight:900;font-size:14px;padding:2px 14px;border-radius:99px 99px 0 0;z-index:2;white-space:nowrap}
+.holder{background:linear-gradient(#fff4dc,#f1dcb4);border:3px solid #4e2a12;box-shadow:inset 0 4px 6px rgba(78,42,18,.35)}
+.holder.empty{background:#8a5a34;border:3px dashed #e9c68f}
+.holder.empty::after{color:#ffe2aa}
+.tlabel{color:#ffe9c4}.tlabel small{color:#f3cf9a}
+body.help:not(.free) .tslot.rec .holder{border-color:#ffd43b}
+#tray.need{outline:4px solid #ffd43b;outline-offset:-4px;animation:walletneed 1s infinite}
+@keyframes walletneed{50%{outline-color:#ff8a3d}}
+#tray.hover{background:linear-gradient(#b87a48,#8a5028)}
+@media (min-width:1000px) and (min-aspect-ratio:5/4){#tray{border:4px solid #4e2a12;border-radius:22px;margin-top:22px}.wtitle{top:-16px;border-radius:99px}}
+.holder .item.k-receipt{--iw:calc(var(--cw)*.7);--ih:calc(var(--cw)*.88);cursor:pointer}
+@media (max-width:600px){.holder .item.cash{transform:scale(.85)}#tray{gap:5px}.tlabel{font-size:12px}}
+.rbig{background:#fff;color:#222;font-family:'Courier New','Malgun Gothic',monospace;max-width:340px;margin:0 auto;padding:16px 16px 30px;box-shadow:0 2px 10px rgba(0,0,0,.25);-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;border-top:6px solid #1a55c8}
+.rbig .rh{text-align:center;font-size:22px;font-weight:900;color:#0b2f6b}
+.rbig .rt{text-align:center;font-size:15px;letter-spacing:.2em;margin:2px 0 10px;border-bottom:2px dashed #888;padding-bottom:8px}
+.rrow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dotted #bbb;font-size:15px}
+.rrow.big{font-size:19px;background:#fff7d6}
+.rf{text-align:center;margin-top:12px;font-size:14px;color:#456}
+/* ---- real-ATM style screen ---- */
+body.free #guide{display:none}
+body.free .rec{animation:none!important}
+body.free .slotbox.active{box-shadow:none!important;animation:none!important}
+body.free .tslot.rec .holder{border-color:#8ea4d0!important;animation:none!important}
+#screen{background:linear-gradient(#e3eefc,#b9d1f0)}
+.sc-head{background:linear-gradient(#1b4aa8,#0b2a6e);border-bottom:3px solid #7db4ff;flex:none}
+.sc-slogan{font-size:.62em;font-style:italic;color:#bcd6ff;letter-spacing:.12em}
+.sc-body:not(.home){margin:.5em;background:rgba(255,255,255,.9);border:3px solid #8fb4e8;border-radius:.6em}
+.sc-foot{margin:0 .5em .4em;background:transparent;border:0;padding:.1em 0}
+.sc-ticker{flex:none;background:linear-gradient(#27428f,#16306e);color:#ffe27a;font-weight:700;font-size:.78em;padding:.2em 0;overflow:hidden;white-space:nowrap}
+.sc-ticker span{display:inline-block;padding-left:100%;animation:mq 26s linear infinite}
+@keyframes mq{to{transform:translateX(-100%)}}
+.sbtn{border-radius:99px;background:linear-gradient(#9ad5ff,#3b94ec 50%,#1c6fd0);border:2px solid #0f58ae;color:#fff;text-shadow:0 1px 2px rgba(0,40,100,.6);box-shadow:0 .15em 0 #0b3d85,inset 0 .15em .2em rgba(255,255,255,.6)}
+.sbtn.sec{background:linear-gradient(#fff,#dfeaff);color:#0f58ae;text-shadow:none;box-shadow:0 .15em 0 #9fb8e6}
+.sbtn.warn{background:linear-gradient(#ffcf99,#f08a2e 55%,#d66a10);border-color:#a84d0b;box-shadow:0 .15em 0 #8a3f08,inset 0 .15em .2em rgba(255,255,255,.5)}
+.sbtn.ok{background:linear-gradient(#a6f0c4,#37b872 55%,#1a9453);border-color:#0f6b3a;box-shadow:0 .15em 0 #0b5a30,inset 0 .15em .2em rgba(255,255,255,.5)}
+.sbtn.sel{background:linear-gradient(#fff2a8,#ffcc33 55%,#f0a800);border-color:#b57800;color:#5a3a00;text-shadow:none}
+.sbtn.dim{opacity:.5;filter:grayscale(.4)}
+.pad .sbtn,.arow .sbtn{border-radius:.6em}
+.sc-body.home{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:.5em;padding:.5em;align-items:stretch;justify-content:stretch;overflow:hidden}
+.home .col{display:flex;flex-direction:column;justify-content:space-evenly;gap:.3em;min-height:0}
+.home .col .sbtn{flex:none;height:2.5em;min-height:0;font-size:1.05em;line-height:1.1;padding:.1em .3em;border-radius:99px}
+#screen.compact .home .col .sbtn{height:2em;font-size:.95em}
+.home .mid{background:#fff;border:3px solid #8fb4e8;border-radius:.5em;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.35em;padding:.4em;overflow:hidden;min-height:0;text-align:center}
+.msg{font-size:1.25em;font-weight:900;color:#0b2f6b;line-height:1.3}
+.bigbtn{font:inherit;font-weight:900;font-size:.95em;width:100%;color:#fff;border:2px solid #fff;outline:2px solid #1a2878;background:linear-gradient(#3a52c8,#1a2878);border-radius:.4em;padding:.35em;cursor:pointer;line-height:1.2;flex:none}
+.bigbtn.warn{background:linear-gradient(#ffae5c,#e8701a);outline-color:#a84d0b}
+table.avail{border-collapse:collapse;font-size:.7em;width:92%}
+.avail th,.avail td{border:1px solid #c44;padding:.1em .3em;color:#b11}
+#screen.big{font-size:calc(var(--fs)*1.2)}
+#screen.compact .home .mid .idle-art,#screen.compact .avail{display:none}
+#screen.compact .home .mid .sub{font-size:.75em}
+#screen.compact .msg{font-size:1.1em}
+#screen.compact .sc-body:not(.home){margin:.25em;border-width:2px;padding:.2em;gap:.15em}
+#screen.compact .sc-foot{margin:0 .25em .2em}
+#screen.compact .pad .sbtn{min-height:1.3em;font-size:.95em;box-shadow:0 .08em 0 #0b3d85}
+#screen.compact .dots{margin:0}#screen.compact .q{font-size:1em}#screen.compact .sc-head{font-size:.9em}
+#screen.compact .sc-ticker{font-size:.7em;padding:.1em 0}
+.pinwrap{display:contents}
+#screen.compact .pinwrap{display:flex;align-items:center;justify-content:center;gap:.8em;width:100%}
+#screen.compact .pinl{flex:1;display:flex;flex-direction:column;align-items:center;gap:.3em}
+#screen.compact .pinwrap .pad{flex:1.1;width:auto}
+#screen.compact .bigbtn{padding:.2em;font-size:.85em}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body class="help">
+<header id="top">
+  <div class="brand">🏧 ATM 사용법 연습</div>
+  <button class="tbtn mis" id="btn-mis">🎯 미션 고르기</button>
+  <button class="tbtn on" id="btn-help">💡 도움 켜짐</button>
+  <button class="tbtn" id="btn-voice">🔈 읽어주기 꺼짐</button>
+  <button class="tbtn on" id="btn-snd">🔔 소리 켜짐</button>
+  <button class="tbtn" id="btn-reset">↺ 처음부터</button>
+</header>
+<section id="guide"><div class="mascot">🧑‍🏫</div><div id="guide-text"></div><button id="guide-say" title="다시 읽어주기">🔊</button></section>
+
+<main id="stage">
+  <div id="atm">
+    <div class="atm-top"><span class="logo">H</span><b>해피은행</b><span class="sub">HAPPY BANK · ATM 24H</span><span class="leds"><i></i><i></i></span></div>
+    <div class="panel">
+      <div class="cell c-pass"><div class="slotbox down" id="slot-passbook" data-slot="passbook"><div class="lbl">통장투입구</div><div class="slit"><i class="led"></i></div><div class="zone"></div></div></div>
+      <div class="cell c-deco"><div class="grille"></div><div>📶 교통카드·NFC</div></div>
+      <div class="cell c-card"><div class="slotbox up" id="slot-card" data-slot="card"><div class="zone"></div><div class="slit"><i class="led"></i></div><div class="lbl">카드투입구</div></div></div>
+      <div class="cell c-cash"><div class="slotbox down" id="slot-cash" data-slot="cash"><div class="lbl">현금투입구</div><div class="slit cashslit"><div class="shutter"></div><i class="led" style="z-index:3"></i></div><div class="zone"></div></div></div>
+      <div class="cell c-rcpt"><div class="slotbox down" id="slot-receipt" data-slot="receipt"><div class="lbl">명세표 나오는 곳</div><div class="slit"></div><div class="zone"></div></div></div>
+    </div>
+    <div class="bezel"><div id="screen"></div></div>
+  </div>
+</main>
+
+<footer id="tray">
+  <div class="wtitle">👛 내 지갑</div>
+  <div class="tslot" data-kind="cash"><div class="holder" data-msg="현금이 없어요"></div><div class="tlabel">💵 현금 <small id="walletTxt"></small></div></div>
+  <div class="tslot" data-kind="card"><div class="holder" data-msg="ATM 안에 있어요"></div><div class="tlabel">💳 카드</div></div>
+  <div class="tslot" data-kind="receipt"><div class="holder" data-msg="명세표 없음"></div><div class="tlabel">🧾 명세표 <small id="rcCount"></small></div></div>
+  <div class="tslot" data-kind="passbook"><div class="holder" data-msg="ATM 안에 있어요"></div><div class="tlabel">📖 통장 <small>(눌러보기)</small></div></div>
+</footer>
+<div id="toast"></div>
+<div id="modal" hidden></div>
+
+<script>
+(()=>{
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const fmt=n=>n.toLocaleString('ko-KR');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const KN={card:'카드',passbook:'통장',cash:'현금',receipt:'명세표'};
+const EUN={card:'는',passbook:'은',cash:'은',receipt:'는'}, EUL={card:'를',passbook:'을',cash:'을',receipt:'를'};
+const SLOTN={card:'카드투입구',passbook:'통장투입구',cash:'현금투입구',receipt:'명세표 나오는 곳'};
+const PIN='1234';
+
+const MISSIONS=[
+ {id:'card-wd',ic:'💳',title:'카드로 돈 찾기',desc:'10,000원 출금',medium:'card',type:'wd',amount:10000,start:'💳 카드를 지갑에서 꺼내 끌어서 "카드투입구"에 넣어 보세요. 오늘 미션은 카드로 10,000원 찾기예요!'},
+ {id:'card-dp',ic:'💳',title:'카드로 돈 넣기',desc:'가진 현금 입금',medium:'card',type:'dp',start:'💳 카드를 끌어서 "카드투입구"에 넣어 보세요. 오늘 미션은 카드로 현금 넣기(입금)예요!'},
+ {id:'bk-wd',ic:'📖',title:'통장으로 돈 찾기',desc:'10,000원 출금',medium:'passbook',type:'wd',amount:10000,start:'📖 통장을 끌어서 "통장투입구"에 넣어 보세요. 오늘 미션은 통장으로 10,000원 찾기예요!'},
+ {id:'bk-dp',ic:'📖',title:'통장으로 돈 넣기',desc:'가진 현금 입금',medium:'passbook',type:'dp',start:'📖 통장을 끌어서 "통장투입구"에 넣어 보세요. 오늘 미션은 통장으로 현금 넣기(입금)예요!'},
+ {id:'bk-sort',ic:'📒',title:'통장 정리하기',desc:'거래내역 인쇄',medium:'passbook',type:'sort',start:'📖 통장을 끌어서 "통장투입구"에 넣어 보세요. 오늘 미션은 통장 정리하기예요!'},
+ {id:'free',ic:'🏧',title:'자유 연습',desc:'마음대로 해보기',medium:null,type:null,start:'💳 카드나 📖 통장을 끌어서 투입구에 넣어 보세요. 하고 싶은 거래를 골라 봐요!'}
+];
+
+const S={run:0,balance:300000,wallet:50000,ledger:[],mission:MISSIONS[5],stage:'idle',medium:null,expect:[],pinBuf:'',amt:0,want:false,ins:0,take:null,did:[],help:true,voice:false,snd:true,lock:false,beepT:null,tx:null};
+
+/* ---------- sound / voice ---------- */
+let AC;
+function tone(f,d,type='sine',v=.07,at=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;const s=AC.currentTime+at;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d+.03)}catch(e){}}
+const sfx={tap:()=>tone(880,.06,'square',.035),ok:()=>{tone(660,.12);tone(990,.22,'sine',.07,.12)},bad:()=>{tone(240,.18,'sawtooth',.045);tone(190,.22,'sawtooth',.045,.16)},beep:()=>{tone(1250,.1,'square',.035);tone(1250,.1,'square',.035,.2)},tick:()=>tone(1600,.03,'square',.025),clunk:()=>tone(120,.15,'triangle',.12)};
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[\p{Extended_Pictographic}‍️"]/gu,''));u.lang='ko-KR';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function say(t){$('#guide-text').textContent=t;const g=$('#guide');g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop');if(S.voice&&S.mission.type)speak(t)}
+let toastT;function toast(t,good){const e=$('#toast');e.textContent=t;e.className='show'+(good?' good':'');clearTimeout(toastT);toastT=setTimeout(()=>e.className='',3000)}
+
+/* ---------- items ---------- */
+function billsHTML(amt){const n=Math.max(1,Math.min(5,Math.round(amt/10000)));let h='';for(let i=0;i<n;i++)h+=`<i class="bill" style="left:${i*4}%;top:${(n-1-i)*6+2}%">10,000<small>원</small></i>`;return h}
+function receiptHTML(tx){return `<b>해피은행</b><br>거래명세표<hr>${tx.date}<br>${tx.type} <b>${fmt(tx.amt)}원</b><br>잔액 ${fmt(tx.bal)}원<hr>감사합니다`}
+function mkItem(kind,amt,tx){const d=document.createElement('div');d.className='item k-'+kind+' '+kind;d.dataset.kind=kind;
+ if(kind==='card')d.innerHTML='<span class="chip"></span><span class="ct">HAPPY<br>CARD</span><span class="stripe"></span><span class="cn">해피카드</span>';
+ else if(kind==='passbook')d.innerHTML='<span class="band"></span><div class="lab">통 장<small>해피은행</small></div>';
+ else if(kind==='cash')d.innerHTML=billsHTML(amt||S.wallet);
+ else d.innerHTML=receiptHTML(tx);
+ return d}
+const holder=k=>$(`.tslot[data-kind=${k}] .holder`);
+const zone=s=>$('.zone',$('#slot-'+s));
+function setHolder(k,inTray,pop){const h=holder(k);h.classList.toggle('empty',!inTray);if(inTray&&pop){const it=$('.item',h);it.classList.remove('popin');void it.offsetWidth;it.classList.add('popin')}}
+function refreshCash(){const h=holder('cash');const it=$('.item',h);it.innerHTML=billsHTML(S.wallet||10000);$('#walletTxt').textContent=S.wallet>0?`${fmt(S.wallet)}원`:'';h.dataset.msg=S.wallet>0?'ATM 안에 있어요':'현금이 없어요';h.classList.toggle('empty',S.wallet<=0||S.cashInside)}
+function initTray(){['cash','card','passbook'].forEach(k=>{const h=holder(k);h.innerHTML='';h.append(mkItem(k,S.wallet))});updateRc()}
+function updateRc(){const h=holder('receipt');h.innerHTML='';const n=S.receipts.length;if(n)h.append(mkItem('receipt',0,S.receipts[n-1]));h.classList.toggle('empty',!n);$('#rcCount').textContent=n?`${n}장`:''}
+function mkPos(slot,kind,amt,tx,instant){const p=document.createElement('div');p.className='pos k-'+kind+(instant?' show instant':'');p.dataset.kind=kind;p.append(mkItem(kind,amt,tx));zone(slot).append(p);return p}
+function eject(slot,kind,amt,tx){const p=mkPos(slot,kind,amt,tx);p.dataset.out='1';void p.offsetWidth;requestAnimationFrame(()=>p.classList.add('show'));return p}
+function clearZones(){$$('.zone').forEach(z=>z.innerHTML='')}
+function openShutter(o){$('#slot-cash').classList.toggle('open',o)}
+
+/* ---------- hints ---------- */
+function setExpect(list){S.expect=list;updateHints()}
+function updateHints(){
+ $$('.slotbox').forEach(b=>b.classList.toggle('active',S.expect.some(x=>x.slot===b.dataset.slot)));
+ $$('.tslot').forEach(t=>t.classList.toggle('rec',S.expect.some(x=>x.kind===t.dataset.kind)));
+ $('#tray').classList.toggle('need',!!(S.take&&Object.values(S.take.pending).some(Boolean)));
+}
+
+/* ---------- screen engine ---------- */
+const timeStr=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const dateStr=(full)=>{const d=new Date();const p=n=>String(n).padStart(2,'0');return full?`${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`:`${String(d.getFullYear()).slice(2)}.${p(d.getMonth()+1)}.${p(d.getDate())}`};
+const TICKER='☆★ 공공기관, 국세청, 검찰, 금융감독원, 해피은행 직원은 절대로 비밀번호나 현금을 요구하지 않아요 ★☆ 비밀번호는 다른 사람에게 알려 주지 않아요 ☆★';
+function render(title,body,foot,cls=''){$('#screen').innerHTML=`<div class="sc-head"><span class="sc-logo">H</span><b>해피은행</b><i class="sc-slogan">HAPPY BANK</i><span class="sc-title">${title}</span><span class="sc-time">${timeStr()}</span></div><div class="sc-body ${cls}">${body}</div>${foot?`<div class="sc-foot">${foot}</div>`:''}<div class="sc-ticker"><span>${TICKER}</span></div>`}
+const pill=(o)=>o?`<button class="sbtn pill ${o.cls||''}" data-act="${o.act}" data-v="${o.v||''}">${o.label}</button>`:'';
+const AVAIL='<table class="avail"><tr><th>거래</th><th>1만원</th><th>5만원</th></tr><tr><td>입금</td><td>○</td><td>✕</td></tr><tr><td>출금</td><td>○</td><td>✕</td></tr></table>';
+function homeScreen(title,left,right,mid){render(title,`<div class="col">${left.map(pill).join('')}</div><div class="mid">${mid}</div><div class="col">${right.map(pill).join('')}</div>`,'','home')}
+const acts={};
+acts.dim=()=>{toast('이 버튼은 이번 수업에서는 쓰지 않아요 😊')};
+acts.big=()=>{S.big=!S.big;$('#screen').classList.toggle('big',S.big);fit()};
+acts.pre=v=>{S.preset=S.preset===v?null:v;renderIdle();say(S.preset?`${{wd:'출금',dp:'입금',sort:'통장정리',bal:'잔액조회'}[v]}을(를) 골랐어요. 이제 카드나 통장을 넣어 주세요.`:S.mission.start)};
+const btn=(act,label,cls='',v='')=>`<button class="sbtn ${cls}" data-act="${act}" data-v="${v}">${label}</button>`;
+const spinner=t=>`<div class="spin"></div><div class="q">${t}</div>`;
+$('#screen').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||S.lock)return;sfx.tap();const f=acts[b.dataset.act];if(f)f(b.dataset.v)});
+
+/* ---------- flow ---------- */
+function resetAll(m){
+ S.run++;clearInterval(S.beepT);S.take=null;S.ins=0;S.cashInside=false;S.lock=false;
+ S.mission=m||S.mission;S.receipts=[];S.balance=300000;S.wallet=50000;S.did=[];S.tx=null;S.medium=null;
+ const un=S.mission.id==='bk-sort'||S.mission.id==='free';
+ S.ledger=[{date:'26.08.20',type:'입금',amt:100000,bal:250000,printed:true},{date:'26.09.05',type:'출금',amt:30000,bal:220000,printed:true},
+  {date:'26.09.20',type:'입금',amt:200000,bal:420000,printed:!un},{date:'26.10.01',type:'출금',amt:70000,bal:350000,printed:!un},{date:'26.10.10',type:'출금',amt:50000,bal:300000,printed:!un}];
+ clearZones();openShutter(false);initTray();refreshCash();setHolder('card',true);setHolder('passbook',true);
+ $('#btn-mis').textContent='🎯 '+S.mission.title;
+ document.body.classList.toggle('free',!S.mission.type);
+ idle();fit();fit();
+}
+function idle(){
+ S.stage='idle';S.medium=null;S.take=null;S.did=[];updateHints();
+ const m=S.mission;
+ setExpect(m.medium?[{kind:m.medium,slot:m.medium}]:[{kind:'card',slot:'card'},{kind:'passbook',slot:'passbook'}]);
+ S.preset=null;renderIdle();
+ say(m.start);
+}
+function renderIdle(){
+ const m=S.mission,P=S.preset;
+ const b=(label,v)=>({label,act:'pre',v,cls:(P===v?'sel ':'')+(m.type===v&&!P?'rec':'')});
+ const dim=l=>({label:l,act:'dim',cls:'dim'});
+ const names={wd:'출금',dp:'입금',sort:'통장정리',bal:'잔액조회'};
+ homeScreen('거래 선택',[b('예금출금','wd'),b('예금조회','bal'),dim('계좌이체'),dim('신용카드')],[b('입금','dp'),b('통장정리','sort'),dim('무통장/<br>무카드'),dim('공과금<br>납부')],
+  `<div class="msg">카드 또는 통장을<br>넣어 주세요</div><div class="idle-art"><span>💳</span><span>📖</span></div><div class="sub">${P?`선택한 거래: <b>${names[P]}</b><br>`:''}지갑의 카드·통장을 끌어서 투입구에 넣어요</div>${AVAIL}<button class="bigbtn" data-act="big">🔍 큰글씨보기 (화면확대)</button>`);
+}
+async function startSession(kind){
+ const run=S.run;S.medium=kind;setExpect([]);S.did=[];
+ render('확인 중',spinner(`${KN[kind]}를 읽고 있어요`));say(`${KN[kind]}${EUL[kind]} 읽고 있어요. 잠시만 기다려 주세요.`);
+ await sleep(1300);if(run!==S.run)return;pin();
+}
+function pin(){S.stage='pin';S.pinBuf='';renderPin();say('화면의 숫자를 눌러서 비밀번호 4자리를 입력하세요. 연습용 비밀번호는 1234예요.')}
+function renderPin(err){
+ const dots=[0,1,2,3].map(i=>`<i class="dot ${i<S.pinBuf.length?'on':''}"></i>`).join('');
+ const nk=(PIN.startsWith(S.pinBuf)&&S.pinBuf.length<4)?PIN[S.pinBuf.length]:(S.pinBuf===PIN?'ok':'c');
+ const key=v=>`<button class="sbtn ${nk===String(v)?'rec':''}" data-act="k" data-v="${v}">${v}</button>`;
+ render('비밀번호 입력',`<div class="pinwrap"><div class="pinl"><div class="q">비밀번호 4자리를<br>눌러 주세요</div><div class="dots ${err?'shake':''}">${dots}</div><div class="hintpw ${err?'err':''}">${err||'연습용 비밀번호는 <b>1 2 3 4</b> 예요'}</div></div><div class="pad">${[1,2,3,4,5,6,7,8,9].map(key).join('')}<button class="sbtn sec ${nk==='c'?'rec':''}" data-act="kc">정정</button>${key(0)}<button class="sbtn ok ${nk==='ok'?'rec':''}" data-act="kok">확인</button></div></div>`,btn('cancel','✖ 취소 (카드/통장 받기)','warn'));
+}
+acts.k=v=>{if(S.stage!=='pin'||S.pinBuf.length>=4)return;S.pinBuf+=v;renderPin()};
+acts.kc=()=>{S.pinBuf='';renderPin()};
+acts.kok=()=>{
+ if(S.pinBuf.length<4){renderPin('숫자 4개를 눌러 주세요');sfx.bad();return}
+ if(S.pinBuf!==PIN){S.pinBuf='';renderPin('비밀번호가 달라요. 1 2 3 4 를 눌러 보세요');sfx.bad();say('괜찮아요! 다시 눌러 봐요. 연습용 비밀번호는 1234예요 😊');return}
+ sfx.ok();
+ const p=S.preset;S.preset=null;
+ if(p&&!(p==='sort'&&S.medium!=='passbook')){S.want=false;S.stage='menu';acts[p]();return}
+ menu();
+};
+function menu(){
+ S.stage='menu';S.want=false;const m=S.mission;const r=t=>m.type===t?'rec':'';const pb=S.medium==='passbook';
+ homeScreen('거래 선택',[{label:'예금출금',act:'wd',cls:r('wd')},{label:'예금조회',act:'bal'}],
+  [{label:'입금',act:'dp',cls:r('dp')},pb?{label:'통장정리',act:'sort',cls:r('sort')}:{label:'통장정리',act:'dim',cls:'dim'}],
+  `<div class="msg">원하시는 거래를<br>선택해 주세요</div><div class="sub">${KN[S.medium]}${EUL[S.medium]} 사용 중이에요</div>${AVAIL}<button class="bigbtn warn" data-act="cancel">✖ 거래 끝내기<br>(${KN[S.medium]} 받기)</button>`);
+ say('원하는 거래를 눌러 보세요. 돈을 찾으려면 "출금", 돈을 넣으려면 "입금"을 눌러요.');
+}
+acts.cancel=()=>{if(S.ins>0)return;endSession('거래를 끝냈어요')};
+function endSession(){takeStage({medium:true,next:finish,msg:`${KN[S.medium]}${EUL[S.medium]} 꼭 챙겨 가세요!`})}
+
+/* withdraw / deposit */
+acts.wd=()=>{S.kind='wd';S.amt=0;amtScreen()};
+function amtScreen(err){
+ S.stage='amt';const m=S.mission;
+ const target=(m.type==='wd'&&m.amount)||0;
+ const rec1=S.amt===0||(target&&S.amt<target)?'rec':'',recOk=(S.amt>0&&(!target||S.amt>=target))?'rec':'';
+ render('출금',`<div class="q">출금할 금액을 눌러 주세요</div><div class="sub">출금 가능 금액 ${fmt(S.balance)}원</div><div class="amt">${fmt(S.amt)}원</div><div class="hintpw err">${err||'&nbsp;'}</div><div class="arow">${btn('add','+1만원','sec '+(target&&S.amt<target?'rec':''),10000)}${btn('add','+5만원','sec',50000)}${btn('add','+10만원','sec',100000)}</div>`,
+  btn('menu','← 이전','sec')+btn('amtclr','정정','warn')+btn('amtok','확인','ok '+recOk));
+ if(!err)say(target?`"+1만원" 버튼을 눌러 ${fmt(target)}원을 만들고 "확인"을 눌러요.`:'금액 버튼을 눌러서 찾을 돈을 만들고 "확인"을 눌러요.');
+}
+acts.menu=()=>menu();
+acts.add=v=>{const n=S.amt+(+v);if(n>S.balance){sfx.bad();amtScreen('잔액보다 많아요. 정정을 눌러 다시 해 봐요');say('잔액보다 많이 찾을 수 없어요. "정정"을 눌러 다시 해요.');return}S.amt=n;amtScreen();say(`${fmt(S.amt)}원이에요. 맞으면 "확인"을 눌러요.`)};
+acts.amtclr=()=>{S.amt=0;amtScreen()};
+acts.amtok=()=>{if(S.amt<=0){sfx.bad();amtScreen('금액 버튼을 먼저 눌러 주세요');return}
+ S.stage='confirm';render('출금 확인',`<div class="q">아래 금액을 출금할까요?</div><div class="bigmoney">${fmt(S.amt)}원</div><div class="sub">수수료 없음 · 출금 후 잔액 ${fmt(S.balance-S.amt)}원</div>`,btn('amt2','← 다시','sec')+btn('askRc','확인','ok rec'));
+ say(`${fmt(S.amt)}원을 출금해요. 맞으면 "확인"을 눌러요.`)};
+acts.amt2=()=>amtScreen();
+acts.askRc=()=>{S.stage='rcAsk';render('명세표',`<div class="q">명세표를<br>출력할까요?</div><div class="idle-art"><span>🧾</span></div><div class="sub">명세표는 거래 내용이 적힌 종이예요</div>`,btn('rcNo','아니요','sec')+btn('rcYes','예, 출력','ok rec'));say('명세표(영수증)가 필요하면 "예, 출력"을 눌러요. 화면 위쪽 "명세표 나오는 곳"에서 종이가 나와요.')};
+acts.rcYes=()=>{S.want=true;doTx()};
+acts.rcNo=()=>{S.want=false;doTx()};
+async function doTx(){
+ const run=S.run;const wd=S.kind==='wd';const amt=wd?S.amt:S.ins;
+ render('처리 중',spinner('거래를 처리하고 있어요'));say('거래를 처리하고 있어요. 잠시만 기다려 주세요.');S.stage='proc';
+ await sleep(1600);if(run!==S.run)return;
+ S.balance+=wd?-amt:amt;
+ const tx={date:dateStr(true),type:wd?'출금':'입금',amt,bal:S.balance,medium:KN[S.medium]};
+ S.ledger.push({date:dateStr(),type:tx.type,amt,bal:S.balance,printed:S.medium==='passbook'});
+ S.did.push({t:wd?'wd':'dp',amt});S.ins=0;
+ if(S.medium==='passbook'){await printAnim([{date:dateStr(),type:tx.type,amt,bal:S.balance}]);if(run!==S.run)return}
+ takeStage({cash:wd?amt:0,receipt:S.want?tx:null,medium:true,next:finish,msg:'거래가 끝났어요! 나온 것을 모두 챙겨 가세요.'});
+}
+async function printAnim(lines){
+ const dur=1.2+lines.length*.7;S.stage='print';
+ render('통장 인쇄',`<div class="q">통장에 거래내역을<br>인쇄하고 있어요</div><div class="pbp">${lines.map((l,i)=>`<div class="ln" style="animation-delay:${.5+i*.7}s"><span>${l.date}</span><span>${l.type}</span><span>${fmt(l.amt)}</span><span>${fmt(l.bal)}</span></div>`).join('')}</div><div class="pbbar" style="--d:${dur}s"><i></i></div>`);
+ say('통장에 거래내역을 인쇄하고 있어요. 조금만 기다려요.');
+ for(let i=0;i<lines.length*2+3;i++){sfx.tick();await sleep(dur*1000/(lines.length*2+3))}
+ await sleep(200);
+}
+/* deposit */
+acts.dp=()=>{
+ S.kind='dp';
+ if(S.wallet<=0){render('입금',`<div class="q">가지고 있는 현금이 없어요</div><div class="sub">먼저 "출금"으로 돈을 찾으면 입금 연습을 할 수 있어요</div>`,btn('menu','← 이전','sec'));say('넣을 현금이 없어요. 먼저 출금을 해 볼까요?');return}
+ S.stage='dpWait';openShutter(true);setExpect([{kind:'cash',slot:'cash'}]);
+ render('입금',`<div class="q">현금투입구가 열렸어요<br>현금을 넣어 주세요</div><div class="idle-art"><span>💵</span></div><div class="sub">지갑의 현금을 끌어서 "현금투입구"에 넣어요</div>`,btn('dpBack','← 이전','sec'));
+ say('아래의 💵 현금을 끌어서 "현금투입구"에 넣어 보세요. 투입구가 열렸어요!');
+};
+acts.dpBack=()=>{openShutter(false);setExpect([]);menu()};
+async function cashIn(){
+ const run=S.run;S.ins=S.wallet;S.wallet=0;S.cashInside=true;refreshCash();openShutter(false);setExpect([]);S.stage='count';
+ const n=S.ins/10000;say('현금을 세고 있어요. 잠시만 기다려 주세요.');
+ for(let i=1;i<=n;i++){render('현금 확인',`<div class="q">현금을 세고 있어요</div><div class="count">${fmt(i*10000)}원</div><div class="sub">만원권 ${i}장</div>`);sfx.tick();await sleep(500);if(run!==S.run)return}
+ S.stage='dpConfirm';S.cashInside=false;
+ render('입금 확인',`<div class="q">아래 금액을 입금할까요?</div><div class="bigmoney">${fmt(S.ins)}원</div><div class="sub">만원권 ${S.ins/10000}장 · 입금 후 잔액 ${fmt(S.balance+S.ins)}원</div>`,btn('dpNo','취소 (현금 돌려받기)','warn')+btn('askRc','확인','ok rec'));
+ say(`${fmt(S.ins)}원이 맞으면 "확인"을 눌러요. 취소하면 현금을 돌려줘요.`);
+}
+acts.dpNo=()=>{const a=S.ins;S.ins=0;takeStage({cash:a,medium:false,next:menu,msg:'현금이 나왔어요. 지갑에 챙겨요.'})};
+/* balance / sort */
+acts.bal=()=>{S.stage='bal';S.did.push({t:'bal'});render('잔액조회',`<div class="q">현재 잔액이에요</div><div class="bigmoney">${fmt(S.balance)}원</div>`,btn('menu','확인','ok rec'));say(`지금 통장에 ${fmt(S.balance)}원이 있어요.`)};
+acts.sort=async()=>{
+ const run=S.run;const un=S.ledger.filter(l=>!l.printed);
+ if(!un.length){render('통장정리',`<div class="q">정리할 거래내역이<br>없어요</div>`,btn('endok','확인','ok rec'));say('정리할 내역이 없어요. 확인을 눌러 통장을 받아요.');S.did.push({t:'sort'});return}
+ await printAnim(un);if(run!==S.run)return;un.forEach(l=>l.printed=true);S.did.push({t:'sort'});
+ render('통장정리',`<div class="q">통장정리 완료!</div><div class="bigmoney">${un.length}건 인쇄</div><div class="sub">통장에 거래내역이 찍혔어요</div>`,btn('endok','확인','ok rec'));say('통장정리가 끝났어요. "확인"을 눌러 통장을 받아요.');
+};
+acts.endok=()=>takeStage({medium:true,next:finish,msg:'통장이 나왔어요. 꼭 챙겨 가세요!'});
+
+/* take items back */
+async function takeStage(o){
+ const run=S.run;S.stage='take';setExpect([]);
+ S.take={pending:{},cashAmt:o.cash||0,next:o.next,rc:o.receipt||null};
+ const list=[];if(o.receipt)list.push(['receipt','receipt',o.receipt]);if(o.cash)list.push(['cash','cash']);if(o.medium)list.push([S.medium,S.medium]);
+ list.forEach(([k])=>S.take.pending[k]=true);
+ renderTake(o.msg);say(o.msg||'꺼내 가세요!');
+ clearInterval(S.beepT);S.beepT=setInterval(sfx.beep,2200);
+ for(const [k,slot,tx] of list){
+  if(run!==S.run)return;
+  if(k==='cash')openShutter(true);
+  eject(slot,k,S.take.cashAmt,tx);sfx.clunk();updateHints();await sleep(k==='receipt'?1500:900);
+ }
+}
+function renderTake(msg){
+ const t=S.take;const row=(k,ic,nm)=>t.pending[k]===undefined?'':`<div class="trow ${t.pending[k]?'':'done'}"><span>${ic}</span>${nm}<em>${t.pending[k]?'👛 지갑에 챙겨요':'✔ 챙겼어요'}</em></div>`;
+ render('꺼내 가세요',`<div class="q">${msg||'꺼내 가세요!'}</div>${row('receipt','🧾','명세표')}${row('cash','💵','현금 '+(t.cashAmt?fmt(t.cashAmt)+'원':''))}${row('card','💳','카드')}${row('passbook','📖','통장')}<div class="sub">나온 것을 끌어서 지갑에 넣어 주세요 👛</div>`);
+}
+function collected(k,pos){
+ const t=S.take;if(!t||!t.pending[k])return;t.pending[k]=false;sfx.ok();
+ if(k==='cash'){S.wallet+=t.cashAmt;refreshCash();setHolder('cash',true,true);openShutter(false)}
+ else if(k==='receipt'){if(t.rc)S.receipts.push(t.rc);updateRc();setHolder('receipt',true,true);toast('명세표를 지갑에 챙겼어요! 🧾 (지갑에서 눌러 보면 자세히 볼 수 있어요)',true)}
+ else {setHolder(k,true,true);toast(`${KN[k]}${EUL[k]} 지갑에 챙겼어요! 👍`,true)}
+ renderTake(t.msg);updateHints();
+ if(!Object.values(t.pending).some(Boolean)){clearInterval(S.beepT);const next=t.next;const run=S.run;setTimeout(()=>{if(run===S.run){S.take=null;updateHints();next()}},700)}
+ else say('좋아요! 아직 남은 게 있어요. 모두 챙겨 주세요.');
+}
+async function finish(){
+ const run=S.run;S.stage='thanks';setExpect([]);
+ render('거래 종료',`<div class="idle-art"><span>🙏</span></div><div class="idle"><div class="big">이용해 주셔서<br>감사합니다</div></div>`);
+ const m=S.mission;const ok=m.type&&S.did.some(d=>d.t===m.type&&(!m.amount||d.amt===m.amount));
+ sfx.ok();say(ok?'와! 미션 성공! 정말 잘했어요 🎉':'거래가 끝났어요. 안녕히 가세요 👋');
+ await sleep(ok?1200:2200);if(run!==S.run)return;
+ if(ok)celebrate();else if(m.type&&S.did.length)toast(`이번 미션은 "${m.title}${m.amount?' '+fmt(m.amount)+'원':''}"이었어요. 다시 해 볼까요?`);
+ idle();
+}
+
+/* ---------- drag & drop ---------- */
+let D=null;
+const rectDist=(r,x,y)=>Math.hypot(Math.max(r.left-x,0,x-r.right),Math.max(r.top-y,0,y-r.bottom));
+function nearestSlot(x,y){let best=null,bd=1e9;$$('.slotbox').forEach(b=>{const d=rectDist(b.getBoundingClientRect(),x,y);if(d<bd){bd=d;best=b}});return bd<=14?best.dataset.slot:null}
+const overTray=(x,y)=>{const r=$('#tray').getBoundingClientRect();return y>=r.top-24&&x>=r.left&&x<=r.right};
+function unstyle(it){['position','left','top','width','height','zIndex','margin','transition','transform','opacity'].forEach(p=>it.style[p]='');it.classList.remove('dragging')}
+function flipBack(it,from){unstyle(it);const to=it.getBoundingClientRect();it.style.transition='none';it.style.transform=`translate(${from.left-to.left}px,${from.top-to.top}px)`;void it.offsetWidth;it.style.transition='transform .4s cubic-bezier(.2,.9,.3,1.25)';it.style.transform='';setTimeout(()=>{it.style.transition=''},450)}
+document.addEventListener('pointerdown',e=>{
+ if(S.lock||D)return;const it=e.target.closest('.item');if(!it)return;
+ const h=it.closest('.holder'),pos=it.closest('.pos');let src;
+ if(h){if(h.classList.contains('empty'))return;src='tray'}else if(pos&&pos.dataset.out==='1'){src='zone'}else return;
+ e.preventDefault();const r=it.getBoundingClientRect();
+ D={it,src,pos,kind:it.dataset.kind,ox:e.clientX-r.left,oy:e.clientY-r.top,sx:e.clientX,sy:e.clientY,moved:false,r0:r};
+ Object.assign(it.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',zIndex:9999,margin:0,transition:'none'});it.classList.add('dragging');
+});
+window.addEventListener('pointermove',e=>{
+ if(!D)return;if(!D.moved&&Math.hypot(e.clientX-D.sx,e.clientY-D.sy)>6)D.moved=true;if(!D.moved)return;e.preventDefault();
+ D.it.style.left=(e.clientX-D.ox)+'px';D.it.style.top=(e.clientY-D.oy)+'px';
+ const s=D.src==='tray'?nearestSlot(e.clientX,e.clientY):null;$$('.slotbox').forEach(b=>b.classList.toggle('hover',b.dataset.slot===s));
+ $('#tray').classList.toggle('hover',D.src==='zone'&&overTray(e.clientX,e.clientY));
+},{passive:false});
+function endDrag(e){
+ if(!D)return;const d=D;D=null;$$('.slotbox').forEach(b=>b.classList.remove('hover'));$('#tray').classList.remove('hover');
+ const from=d.it.getBoundingClientRect();
+ if(!d.moved){unstyle(d.it);tapHint(d);return}
+ if(d.src==='tray'){
+  const slot=nearestSlot(e.clientX,e.clientY);
+  if(slot&&S.expect.some(x=>x.kind===d.kind&&x.slot===slot))insertFlow(d,slot);
+  else if(slot){flipBack(d.it,from);wrong(d.kind,slot)}
+  else{flipBack(d.it,from);sfx.bad();toast('투입구까지 끌어다 놓아 보세요. 다시 해 봐요! 💪');say(`${KN[d.kind]}${EUL[d.kind]} 끌어서 ${SLOTN[d.kind]}에 넣어 보세요.`)}
+ }else{
+  if(overTray(e.clientX,e.clientY)){d.it.style.transition='transform .3s,opacity .3s';d.it.style.transform='scale(.3)';d.it.style.opacity='0';setTimeout(()=>d.pos.remove(),320);collected(d.kind,d.pos)}
+  else{flipBack(d.it,from);toast('지갑까지 끌어서 챙겨 주세요! 💪');sfx.bad()}
+ }
+}
+window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
+function tapHint(d){
+ if(d.kind==='receipt'){if(d.src==='tray')openReceipts();else if(S.take&&S.take.rc)openReceipt(S.take.rc,true);return}
+ if(d.kind==='passbook'&&d.src==='tray'){openPassbook();return}
+ d.it.animate([{transform:'rotate(-6deg)'},{transform:'rotate(6deg)'},{transform:'none'}],{duration:350});
+ if(d.src==='zone'){say('지갑으로 끌어서 챙겨요!');return}
+ const ok=S.expect.some(x=>x.kind===d.kind);
+ say(ok?`${KN[d.kind]}${EUL[d.kind]} 끌어서 ${SLOTN[d.kind]}에 넣어 보세요. 반짝이는 곳이에요!`:`지금은 ${KN[d.kind]}${EUL[d.kind]} 넣을 때가 아니에요. 화면을 보고 천천히 해요 😊`);
+}
+function wrong(kind,slot){
+ sfx.bad();const b=$('#slot-'+slot);b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+ let msg;
+ if(slot===kind){
+  if(S.stage==='idle'&&S.mission.medium)msg=`이번 미션은 ${KN[S.mission.medium]}로 해 봐요! 😊`;
+  else msg=`지금은 ${KN[kind]}${EUL[kind]} 넣을 때가 아니에요. 화면 안내를 먼저 읽어 봐요 😊`;
+ }else if(!S.expect.length)msg=`지금은 ${KN[kind]}${EUL[kind]} 넣을 때가 아니에요. 화면을 보고 천천히 해 봐요 😊`;
+ else msg=pick([`앗, 거기가 아니에요! 괜찮아요. ${KN[kind]}${EUN[kind]} "${SLOTN[kind]}"에 넣어요. 다시 해 봐요! 😊`,`아쉬워요! 한 번 더 해 볼까요? ${KN[kind]}${EUN[kind]} ${SLOTN[kind]}에 넣어요 💪`,`좋은 시도예요! 반짝이는 투입구를 찾아서 다시 해 봐요 ✨`]);
+ toast(msg);say(msg);
+}
+async function insertFlow(d,slot){
+ const run=S.run;S.lock=true;const kind=d.kind,it=d.it;
+ const pos=mkPos(slot,kind,S.wallet,null,true);const tgt=pos.firstChild;tgt.style.visibility='hidden';
+ const r=tgt.getBoundingClientRect();
+ it.style.transition='left .3s ease,top .3s ease';it.style.left=r.left+'px';it.style.top=r.top+'px';
+ await sleep(320);if(run!==S.run)return;
+ unstyle(it);setHolder(kind,false);tgt.style.visibility='';sfx.clunk();
+ await sleep(200);if(run!==S.run)return;
+ pos.classList.remove('instant');void pos.offsetWidth;pos.classList.remove('show');
+ await sleep(1100);if(run!==S.run)return;pos.remove();S.lock=false;
+ if(S.stage==='idle')startSession(kind);else if(S.stage==='dpWait')cashIn();
+}
+
+/* ---------- modals ---------- */
+const modal=$('#modal');
+function openModal(h){modal.innerHTML=h;modal.hidden=false}
+function closeModal(){modal.hidden=true;modal.innerHTML=''}
+function missionModal(first){
+ openModal(`<div class="card-modal"><h2>🎯 오늘의 미션을 골라요</h2><p>하고 싶은 연습을 눌러 보세요</p><div class="mis-grid">${MISSIONS.map(m=>`<button class="mis ${m.id==='free'?'free':''}" data-m="${m.id}"><span class="ic">${m.ic}</span>${m.title}<small>${m.desc}</small></button>`).join('')}</div></div>`);
+}
+modal.addEventListener('click',e=>{
+ const b=e.target.closest('[data-m]');if(b){const m=MISSIONS.find(x=>x.id===b.dataset.m);closeModal();resetAll(m);return}
+ if(e.target.closest('[data-close]')||e.target===modal)closeModal();
+ if(e.target.closest('[data-next]')){const i=MISSIONS.indexOf(S.mission);closeModal();resetAll(MISSIONS[(i+1)%MISSIONS.length])}
+ if(e.target.closest('[data-again]')){closeModal();resetAll(S.mission)}
+ if(e.target.closest('[data-pick]')){missionModal()}
+});
+function receiptFull(tx){
+ const r=(a,b,c='')=>`<div class="rrow ${c}"><span>${a}</span><b>${b}</b></div>`;
+ return `<div class="rbig"><div class="rh">해피은행</div><div class="rt">거 래 명 세 표</div>${r('거래일시',tx.date)}${r('거래종류',tx.type)}${r('거래매체',tx.medium||'카드')}${r('계좌번호','123-456-789012')}${r('취급점','해피은행 ATM 1호기')}${r('수수료','0원')}${r(tx.type+'금액',fmt(tx.amt)+'원','big')}${r('거래 후 잔액',fmt(tx.bal)+'원','big')}<div class="rf">이용해 주셔서 감사합니다 ♡</div></div>`;
+}
+function openReceipt(tx,fromAtm){
+ openModal(`<div class="card-modal"><h2>🧾 거래명세표</h2><p>${fromAtm?'ATM에서 나온 명세표예요. 닫고 지갑으로 끌어서 챙겨요 👛':'거래 내용이 적혀 있어요'}</p>${receiptFull(tx)}<div class="mrow"><button class="tbtn" data-close>닫기</button></div></div>`);
+}
+function openReceipts(){
+ const list=[...S.receipts].reverse();
+ openModal(`<div class="card-modal" style="max-height:92vh;overflow:auto"><h2>🧾 내 명세표 (${list.length}장)</h2><p>거래할 때마다 받은 명세표예요</p>${list.map(receiptFull).join('<div style="height:14px"></div>')}<div class="mrow"><button class="tbtn" data-close>닫기</button></div></div>`);
+}
+function openPassbook(){
+ const rows=S.ledger.filter(l=>l.printed).slice(-8);
+ openModal(`<div class="card-modal"><h2>📖 내 통장</h2><p>통장에 찍혀 있는 거래내역이에요</p><table class="pbt"><tr><th>날짜</th><th>구분</th><th>금액</th><th>잔액</th></tr>${rows.map(l=>`<tr><td>${l.date}</td><td>${l.type}</td><td>${fmt(l.amt)}</td><td>${fmt(l.bal)}</td></tr>`).join('')}</table><p style="margin-top:10px">통장을 ATM에 넣으려면 끌어서 "통장투입구"에 넣어요</p><div class="mrow"><button class="tbtn" data-close>닫기</button></div></div>`);
+}
+function celebrate(){
+ sfx.ok();for(let i=0;i<46;i++){const c=document.createElement('div');c.className='confetti';c.textContent=pick(['🎉','⭐','🎊','✨','👏','💙']);c.style.left=Math.random()*100+'vw';c.style.animationDuration=(2+Math.random()*2.5)+'s';c.style.animationDelay=Math.random()*.8+'s';document.body.append(c);setTimeout(()=>c.remove(),5500)}
+ openModal(`<div class="card-modal"><h2 style="font-size:32px">🎉 참 잘했어요! 🎉</h2><p style="font-size:18px">"${S.mission.title}" 미션 성공!<br>이제 진짜 ATM도 할 수 있어요 👏</p><div class="mrow"><button class="tbtn" data-next>다음 미션 ▶</button><button class="tbtn" data-again>다시 하기</button><button class="tbtn" data-pick>미션 고르기</button></div></div>`);
+ say('미션 성공! 정말 잘했어요 🎉');
+}
+
+/* ---------- top bar ---------- */
+$('#btn-mis').onclick=()=>missionModal();
+$('#btn-reset').onclick=()=>resetAll(S.mission);
+$('#btn-help').onclick=e=>{S.help=!S.help;document.body.classList.toggle('help',S.help);e.target.classList.toggle('on',S.help);e.target.textContent=S.help?'💡 도움 켜짐':'💡 도움 꺼짐'};
+$('#btn-voice').onclick=e=>{S.voice=!S.voice;e.target.classList.toggle('on',S.voice);e.target.textContent=S.voice?'🔊 읽어주기 켜짐':'🔈 읽어주기 꺼짐';if(S.voice)speak($('#guide-text').textContent);else try{speechSynthesis.cancel()}catch(_){}};
+$('#btn-snd').onclick=e=>{S.snd=!S.snd;e.target.classList.toggle('on',S.snd);e.target.textContent=S.snd?'🔔 소리 켜짐':'🔕 소리 꺼짐'};
+$('#guide-say').onclick=()=>speak($('#guide-text').textContent);
+
+/* ---------- responsive sizing ---------- */
+function fit(){
+ const vw=document.documentElement.clientWidth,vh=window.innerHeight;
+ const root=document.documentElement,scr=$('#screen'),atm=$('#atm');
+ const side=matchMedia('(min-width:1000px) and (min-aspect-ratio:5/4)').matches;
+ const chrome=$('#top').offsetHeight+$('#guide').offsetHeight+5+12;
+ let W=Math.min(vw-16-(side?$('#tray').offsetWidth+30:0),880);
+ const probe=w=>{root.style.setProperty('--u',(w/100)+'px');root.style.setProperty('--sh','0px');
+  const fs=parseFloat(getComputedStyle(scr).fontSize),tray=side?0:$('#tray').offsetHeight;
+  return {fs,sh:vh-chrome-tray-atm.offsetHeight}};
+ let p=probe(W);
+ while(p.sh<p.fs*17.5&&W>280){W-=8;p=probe(W)}
+ if(p.sh<p.fs*28){ /* a slightly smaller machine may leave room for a roomier screen */
+  for(let w=W-8;w>=W*.8;w-=8){const q=probe(w);if(q.sh>=q.fs*28){W=w;p=q;break}}
+  p=probe(W);
+ }
+ const f=Math.min(Math.max(p.sh,p.fs*10),W*1.05);
+ root.style.setProperty('--u',(W/100)+'px');root.style.setProperty('--sh',f+'px');
+ scr.classList.toggle('compact',f<p.fs*27);
+}
+window.addEventListener('resize',()=>{fit();fit()});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{fit();fit()},200));
+
+/* ---------- start ---------- */
+fit();resetAll(MISSIONS[5]);fit();fit();
+missionModal(true);
+window.__atm={S,acts,resetAll,MISSIONS};
+})();
+</script>
+</body>
+</html>
