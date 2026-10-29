@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATM 사용법 수업 자료</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fffbf4;--terra:#e07a5f;--sage:#81b29a;--mustard:#f2cc8f;--navy:#3d405b;--line:#ecdcc6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);font-family:'Gowun Dodum','Malgun Gothic',sans-serif;color:var(--navy);min-height:100vh}
+header{background:var(--navy);color:#fff;padding:36px 20px 64px;text-align:center}
+header .chip{display:inline-block;background:var(--terra);font-family:'Jua';padding:4px 16px;border-radius:99px;font-size:17px}
+header h1{font-family:'Jua';font-weight:400;font-size:clamp(32px,6vw,52px);margin:12px 0 6px}
+header p{margin:0;font-size:18px;opacity:.85}
+main{max-width:1040px;margin:-40px auto 40px;padding:0 16px}
+.app{display:flex;align-items:center;gap:18px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:18px 22px;margin-bottom:22px;box-shadow:0 6px 0 rgba(236,220,198,.7);flex-wrap:wrap}
+.app .ic{font-size:46px}
+.app b{font-family:'Jua';font-weight:400;font-size:26px;display:block}
+.app span{font-size:16px;color:#7b6f66}
+.app a{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.card{background:#fff;border:2px solid var(--line);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 0 rgba(236,220,198,.7)}
+.card .no{align-self:flex-start;font-family:'Jua';color:#fff;background:var(--terra);border-radius:99px;padding:3px 14px;font-size:16px}
+.card:nth-child(2) .no{background:#e3a94d}.card:nth-child(3) .no{background:var(--sage)}.card:nth-child(4) .no{background:#6c7fb5}
+.card .ic{font-size:52px;line-height:1.1}
+.card h2{font-family:'Jua';font-weight:400;font-size:26px;margin:0}
+.card p{margin:0;font-size:15.5px;line-height:1.55;color:#6b6259;flex:1}
+.btns{display:flex;flex-direction:column;gap:8px}
+a.b{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-family:'Jua';font-size:18px;border-radius:14px;padding:10px 14px;background:var(--navy);color:#fff}
+a.b.alt{background:#fff;color:var(--navy);border:2px solid var(--line)}
+a.b:hover{filter:brightness(1.1)}
+.tips{margin-top:26px;background:#fff;border:2px dashed var(--mustard);border-radius:20px;padding:18px 22px;font-size:16px;line-height:1.75}
+.tips b{color:var(--terra)}
+</style>
+</head>
+<body>
+<header>
+  <span class="chip">생활 속 금융 · 특수학급</span>
+  <h1>🏧 ATM 사용법 수업 자료</h1>
+  <p>4차시 프레젠테이션 · 학습지 · 연습 앱</p>
+</header>
+<main>
+  <div class="app"><span class="ic">🏧</span><div><b>ATM 연습 앱</b><span>학생들이 직접 끌어서 넣고, 눌러 보며 연습해요</span></div><a class="b" href="index.html" target="_blank">앱 열기 ↗</a></div>
+  <div class="grid">
+    <div class="card"><span class="no">1차시</span><div class="ic">💳💵</div><h2>카드로 돈 찾기</h2><p>ATM의 모습, 돈 찾는 6단계, 비밀번호 약속, 카드·현금·명세표 챙기기</p><div class="btns"><a class="b" href="atm-presentation.html" target="_blank">📽 프레젠테이션</a><a class="b alt" href="atm-worksheet.html" target="_blank">📝 학습지</a></div></div>
+    <div class="card"><span class="no">2차시</span><div class="ic">💳💰</div><h2>카드로 돈 넣기</h2><p>출금과 입금의 차이, 현금투입구에 돈 넣기, 넣은 금액 확인하기</p><div class="btns"><a class="b" href="atm-presentation-2.html" target="_blank">📽 프레젠테이션</a><a class="b alt" href="atm-worksheet-2.html" target="_blank">📝 학습지</a></div></div>
+    <div class="card"><span class="no">3차시</span><div class="ic">📖💵</div><h2>통장으로 찾고 넣기</h2><p>통장 알아보기, 통장투입구, 통장으로 출금·입금, 통장 인쇄 기다리기</p><div class="btns"><a class="b" href="atm-presentation-3.html" target="_blank">📽 프레젠테이션</a><a class="b alt" href="atm-worksheet-3.html" target="_blank">📝 학습지</a></div></div>
+    <div class="card"><span class="no">4차시</span><div class="ic">📒💰</div><h2>통장 정리 · 잔액</h2><p>통장정리 순서, 통장 읽기(찾으신·맡기신 금액), 잔액 알기, ATM 달인 총정리</p><div class="btns"><a class="b" href="atm-presentation-4.html" target="_blank">📽 프레젠테이션</a><a class="b alt" href="atm-worksheet-4.html" target="_blank">📝 학습지</a></div></div>
+  </div>
+  <div class="tips">
+    💡 <b>프레젠테이션 조작</b> — 넘기기 ← → / 스페이스, 전체 화면 <b>F</b>, 선생님 메모 <b>N</b><br>
+    💡 <b>학습지</b> — 위쪽 <b>정답 보기</b>를 누르면 선생님용 정답이 표시돼요. 인쇄할 때 <b>배경 그래픽</b>을 켜 주세요.<br>
+    💡 <b>연습 앱</b> — 연습용 비밀번호는 <b>1234</b>예요. 차시에 맞는 미션을 골라서 시작해요.
+  </div>
+</main>
+</body>
+</html>
